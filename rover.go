@@ -22,8 +22,7 @@ const (
 )
 
 type Rover struct {
-	x         int64
-	y         int64
+	position  coordinate
 	direction string
 	obstacles []coordinate
 }
@@ -34,7 +33,7 @@ type coordinate struct {
 }
 
 func NewRover(x int64, y int64, direction string, obstacles []coordinate) *Rover {
-	return &Rover{x: x, y: y, direction: direction, obstacles: obstacles}
+	return &Rover{position: coordinate{x: x, y: y}, direction: direction, obstacles: obstacles}
 }
 
 func (r *Rover) Command(cc string) string {
@@ -56,14 +55,13 @@ func (r *Rover) Command(cc string) string {
 		} else if c == "R" {
 			r.direction = r.rotate(rotateRight)
 		}
-		fmt.Println(r.x, r.y, r.direction)
 	}
 
 	var errMsg string
 	if err != nil {
 		errMsg = fmt.Sprintf(" %s", err.Error())
 	}
-	return fmt.Sprintf("(%d, %d) %s%s", r.x, r.y, r.direction, errMsg)
+	return fmt.Sprintf("(%d, %d) %s%s", r.position.x, r.position.y, r.direction, errMsg)
 }
 
 func (r *Rover) rotate(direction rotate) string {
@@ -76,24 +74,22 @@ func (r *Rover) rotate(direction rotate) string {
 }
 
 func (r *Rover) move(direction move) error {
-	x := r.x
-	y := r.y
+	nextPos := r.position
 	switch r.direction {
 	case "WEST":
-		x -= int64(direction)
+		nextPos.x -= int64(direction)
 	case "EAST":
-		x += int64(direction)
+		nextPos.x += int64(direction)
 	case "NORTH":
-		y += int64(direction)
+		nextPos.y += int64(direction)
 	case "SOUTH":
-		y -= int64(direction)
+		nextPos.y -= int64(direction)
 	}
 	for _, o := range r.obstacles {
-		if o.x == x && o.y == y {
+		if o.x == nextPos.x && o.y == nextPos.y {
 			return errors.New("STOPPED")
 		}
 	}
-	r.x = x
-	r.y = y
+	r.position = nextPos
 	return nil
 }
